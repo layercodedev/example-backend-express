@@ -1,0 +1,21 @@
+{
+  "name": "example-backend-express",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run index.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/express": "^5.0.1"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@ai-sdk/google": "^1.2.14",
+    "@layercode/node-server-sdk": "^1.0.1",
+    "ai": "^4.3.11",
+    "express": "^5.1.0"
+  }
+}
