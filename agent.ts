@@ -26,7 +26,6 @@ export const onRequestPost: RequestHandler = async (req, res) => {
     res.status(401).send("Unauthorized");
     return;
   }
-
   console.log("Request body received from Layercode", requestBody);
   const { session_id, text, type } = requestBody;
 
