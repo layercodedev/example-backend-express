@@ -16,7 +16,7 @@ A minimal TypeScript backend using **Express** to provide a `/agent` endpoint fo
 
 ## 🚀 Quick Start
 
-> Requires **[Bun](https://bun.sh) 1.0+** and a valid **Gemini API key**.
+> Requires **[Bun](https://bun.sh) 1.0+**, a valid **Gemini API key**, and a **Layercode webhook secret**.
 
 ```bash
 # Install dependencies
@@ -34,7 +34,13 @@ The server will listen on port `3001` by default.
 
 ### POST `/agent`
 
-Send the user's text and receive streamed chunks.
+Send the user's text and receive streamed chunks. Requires a valid Layercode webhook signature.
+
+#### Headers
+
+```
+layercode-signature: <webhook-signature>
+```
 
 #### Request JSON
 
@@ -84,7 +90,7 @@ data: {"type":"response.end","turn_id":"turn-0001"}
 - `express` – web framework for Node.js/Bun
 - `@ai-sdk/google` – Gemini SDK
 - `ai` – streaming and message handling
-- `@layercode/node-server-sdk` – abstracts SSE streaming and response handling
+- `@layercode/node-server-sdk` – abstracts SSE streaming, response handling, and webhook verification
 
 All dependencies are managed in `bun.lock` and `package.json`.
 
@@ -95,6 +101,8 @@ All dependencies are managed in `bun.lock` and `package.json`.
 | Symptom                                   | Fix                                                                         |
 | ----------------------------------------- | --------------------------------------------------------------------------- |
 | `GOOGLE_GENERATIVE_AI_API_KEY is not set` | Export var or add to `.env`                                                 |
+| `LAYERCODE_WEBHOOK_SECRET is not set`     | Export var or add to `.env`                                                 |
+| `401 Unauthorized` response               | Check webhook signature and secret match                                    |
 | Empty or truncated response               | Check session consistency & logs                                            |
 | Server not responding                     | Check logs and port configuration                                           |
 | Express type error on handler return      | Do not return a value from the handler; stream or end the response directly |
@@ -107,6 +115,7 @@ All dependencies are managed in `bun.lock` and `package.json`.
 - Do **not** commit your secrets.
 - Use HTTPS & proper auth in production.
 - Consider rate-limiting and persistence (e.g., Redis, DB) for sessions.
+- Ensure `LAYERCODE_WEBHOOK_SECRET` is properly set and kept secure.
 
 ---
 

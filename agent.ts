@@ -1,8 +1,8 @@
-import type { Request, Response } from "express";
+import type { RequestHandler } from "express";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { streamText } from "ai";
 import type { CoreMessage } from "ai";
-import { streamResponse } from "@layercode/node-server-sdk";
+import { verifySignature, streamResponse } from "@layercode/node-server-sdk";
 import { Readable } from "node:stream"; // Node.js 18+ only
 
 const google = createGoogleGenerativeAI({
@@ -15,8 +15,18 @@ const SYSTEM_PROMPT =
   "You are a helpful conversation assistant. You should respond to the user's message in a conversational manner. Your output will be spoken by a TTS model. You should respond in a way that is easy for the TTS model to speak and sound natural.";
 const WELCOME_MESSAGE = "Welcome to Layercode. How can I help you today?";
 
-export const onRequestPost = async (req: Request, res: Response) => {
+export const onRequestPost: RequestHandler = async (req, res) => {
   const requestBody = req.body;
+  const signature = req.header("layercode-signature") || "";
+  const secret = process.env.LAYERCODE_WEBHOOK_SECRET || "";
+  const payload = JSON.stringify(requestBody);
+  const isValid = verifySignature({ payload, signature, secret });
+  if (!isValid) {
+    console.error("Invalid signature", signature, secret, payload);
+    res.status(401).send("Unauthorized");
+    return;
+  }
+
   console.log("Request body received from Layercode", requestBody);
   const { session_id, text, type } = requestBody;
 
