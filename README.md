@@ -1,6 +1,6 @@
 # Layercode Conversational AI Backend (Express)
 
-This open source project demonstrates how to build a real-time voice agent using [Layercode](https://layercode.com) Voice Pipelines, with a Express backend to drive the agent's responses.
+This open source project demonstrates how to build a real-time voice agent using [Layercode](https://layercode.com) Voice Pipelines, with an Express backend to drive the agent's responses.
 
 Read the companion guide: [Express Backend Guide](https://docs.layercode.com/backend-guides/express)
 
