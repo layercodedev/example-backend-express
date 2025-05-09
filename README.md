@@ -1,124 +1,66 @@
 # Layercode Conversational AI Backend (Express)
 
-A minimal TypeScript backend using **Express** to provide a `/agent` endpoint for streaming conversational AI responses, compatible with Layercode's voice pipelines. This implementation mirrors the Hono/Cloudflare Workers example, but is designed for traditional Node.js/Bun environments.
+This open source project demonstrates how to build a real-time voice agent using [Layercode](https://layercode.com) Voice Pipelines, with a Express backend to drive the agent's responses.
 
----
+Read the companion guide: [Express Backend Guide](https://docs.layercode.com/backend-guides/express)
 
-## ✨ Features
+## Features
 
-- **Session state** stored in memory – one history per user (per process).
-- **Real-time streaming** – incremental `response.tts` chunks delivered via SSE (using [`@layercode/node-server-sdk`](https://www.npmjs.com/package/@layercode/node-server-sdk)).
-- **Google Gemini SDK** integration (`@ai-sdk/google`).
-- **Express** – familiar, fast, and easy to run locally or deploy anywhere.
-- **Graceful fall-backs** – friendly responses on errors.
+- **Browser or Phone Voice Interaction:** Users can speak to the agent directly from their browser or phone (see [Layercode docs](https://docs.layercode.com) for more details on connecting these channels)
+- **Session State:** Conversation history is stored in memory. You can easily switch to a database or Redis to persist sessions.
+- **LLM Integration:** User queries are sent to [Gemini Flash 2.0](https://ai.google.dev/gemini-api/docs/models/gemini).
+- **Streaming Responses:** LLM responses are streamed back, where Layercode handles the conversion to speech and playback to the user.
 
----
+## How It Works
 
-## 🚀 Quick Start
+1. **Frontend:**  
+   See the [Layercode docs](https://docs.layercode.com) for details about connecting a Web Voice Agent frontend or Phone channel to the agent. This backend can also be tested our in the [Layercode Dashboard](https://dash.layercode.com) Playground
 
-> Requires **[Bun](https://bun.sh) 1.0+**, a valid **Gemini API key**, and a **Layercode webhook secret**.
+2. **Transcription & Webhook:**  
+   Layercode transcribes user speech. For each complete message, it sends a webhook containing the transcribed text to the /agent endpoint.
+
+3. **Backend Processing:**  
+   The transcribed text is sent to the LLM (Gemini Flash 2.0) to generate a response.
+
+4. **Streaming & Speech Synthesis:**  
+   As soon as the LLM starts generating a response, the backend streams the output back as SSE messags to Layercode, which converts it to speech and delivers it to the frontend for playback in realtime.
+
+## Getting Started
+
+```bash
+# Clone and enter the repo
+$ git clone https://github.com/layercodedev/example-backend-express.git && cd example-backend-express
+```
+
+> Requires **[Bun](https://bun.sh) 1.0+**
 
 ```bash
 # Install dependencies
 bun install
+```
 
-# Start the server
+Edit your .env environment variables. You'll need to add:
+
+- `GOOGLE_GENERATIVE_AI_API_KEY` - Your Google AI API key
+- `LAYERCODE_WEBHOOK_SECRET` - Your Layercode pipeline's webhook secret, found in the [Layercode dashboard](https://dash.layercode.com) (goto your pipeline, click Edit in the Your Backend Box and copy the webhook secret shown)
+- `LAYERCODE_API_KEY` - Your Layercode API key found in the [Layercode dashboard settings](https://dash.layercode.com/settings)
+
+If running locally, setup a tunnel (we recommend cloudflared which is free for dev) to your localhost so the Layercode webhook can reach your backend. Follow our tunneling guide here: [https://docs.layercode.com/tunnelling](https://docs.layercode.com/tunnelling)
+
+If you didn't follow the tunneling guide, and are deploying this example to the internet, remember to set the Webhook URL in the [Layercode dashboard](https://dash.layercode.com/) (click Edit in the Your Backend box) to your publically accessible backend URL.
+
+Now run the backend:
+
+```bash
 bun run index.ts
 ```
 
 The server will listen on port `3001` by default.
 
----
+The easiest way to talk to your agent is to use the [Layercode Dashboard](https://dash.layercode.com) Playground.
 
-## 🗺️ API
+Tip: If you don't hear any response from your voice agent, check the Webhook Logs tab in your pipeline in the [Layercode Dashboard](https://dash.layercode.com/) to see the response from your backend.
 
-### POST `/agent`
+## License
 
-Send the user's text and receive streamed chunks. Requires a valid Layercode webhook signature.
-
-#### Headers
-
-```
-layercode-signature: <webhook-signature>
-```
-
-#### Request JSON
-
-```jsonc
-{
-  "text": "Hello, how are you?",
-  "type": "message", // "message" or "session.start"
-  "session_id": "sess-1234"
-}
-```
-
-#### Streaming Response (SSE)
-
-All streaming and SSE response handling is managed by [`@layercode/node-server-sdk`](https://www.npmjs.com/package/@layercode/node-server-sdk), which provides a simple interface for sending TTS and data chunks to the client, abstracting away manual SSE logic.
-
-```
-data: {"type":"response.tts","content":"Hi there!","turn_id":"turn-0001"}
-
-data: {"type":"response.end","turn_id":"turn-0001"}
-```
-
-| Type           | Description                         |
-| -------------- | ----------------------------------- |
-| `response.tts` | A partial or complete chunk of text |
-| `response.end` | Indicates the turn has finished     |
-
-#### Implementation Notes
-
-- The `/agent` endpoint uses Node.js 18+ [`Readable.fromWeb`](https://nodejs.org/api/stream.html#readablefromwebstream-options) to convert the Fetch API `Response.body` stream to a Node.js stream for Express.
-- The route handler **does not return a value**; it streams the response directly to the client using `nodeStream.pipe(res)`.
-- Make sure you are running on **Node.js 18 or newer** for streaming support.
-
----
-
-## 🧩 Project Structure
-
-| Path        | Purpose                          |
-| ----------- | -------------------------------- |
-| `agent.ts`  | `/agent` endpoint implementation |
-| `index.ts`  | Express app entrypoint & routing |
-| `README.md` | You are here                     |
-
----
-
-## 🛠️ Dependencies
-
-- `express` – web framework for Node.js/Bun
-- `@ai-sdk/google` – Gemini SDK
-- `ai` – streaming and message handling
-- `@layercode/node-server-sdk` – abstracts SSE streaming, response handling, and webhook verification
-
-All dependencies are managed in `bun.lock` and `package.json`.
-
----
-
-## 🩹 Troubleshooting
-
-| Symptom                                   | Fix                                                                         |
-| ----------------------------------------- | --------------------------------------------------------------------------- |
-| `GOOGLE_GENERATIVE_AI_API_KEY is not set` | Export var or add to `.env`                                                 |
-| `LAYERCODE_WEBHOOK_SECRET is not set`     | Export var or add to `.env`                                                 |
-| `401 Unauthorized` response               | Check webhook signature and secret match                                    |
-| Empty or truncated response               | Check session consistency & logs                                            |
-| Server not responding                     | Check logs and port configuration                                           |
-| Express type error on handler return      | Do not return a value from the handler; stream or end the response directly |
-| TypeScript error with Readable.fromWeb    | Use `Readable.fromWeb(response.body as any)` and ensure Node.js 18+         |
-
----
-
-## 🔐 Security Notes
-
-- Do **not** commit your secrets.
-- Use HTTPS & proper auth in production.
-- Consider rate-limiting and persistence (e.g., Redis, DB) for sessions.
-- Ensure `LAYERCODE_WEBHOOK_SECRET` is properly set and kept secure.
-
----
-
-## 📝 License
-
-No LICENSE file in this directory. See the root of the Layercode repo for license details.
+MIT

@@ -7,6 +7,7 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/cors": "^2.8.18",
     "@types/express": "^5.0.1"
   },
   "peerDependencies": {
@@ -14,8 +15,9 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^1.2.14",
-    "@layercode/node-server-sdk": "^1.1.0",
+    "@layercode/node-server-sdk": "^1.2.1",
     "ai": "^4.3.11",
+    "cors": "^2.8.5",
     "express": "^5.1.0"
   }
 }
