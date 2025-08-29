@@ -2,13 +2,13 @@ import type { RequestHandler } from 'express';
 
 export const onRequestPost: RequestHandler = async (req, res) => {
   try {
-    const response = await fetch("https://api.layercode.com/v1/pipelines/authorize_session", {
+    const response = await fetch('https://api.layercode.com/v1/agents/web/authorize_session', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${process.env.LAYERCODE_API_KEY}`,
       },
-      body: JSON.stringify({ pipeline_id: "your-pipeline-id", session_id: null }),
+      body: JSON.stringify({ agent_id: 'your-agent-id', conversation_id: null }),
     });
     if (!response.ok) {
       console.log('response not ok', response.statusText);
