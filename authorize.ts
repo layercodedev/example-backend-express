@@ -8,7 +8,7 @@ export const onRequestPost: RequestHandler = async (req, res) => {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${process.env.LAYERCODE_API_KEY}`,
       },
-      body: JSON.stringify({ agent_id: 'your-agent-id', session_id: null }),
+      body: JSON.stringify({ agent_id: 'your-agent-id', conversation_id: null }),
     });
     if (!response.ok) {
       console.log('response not ok', response.statusText);
